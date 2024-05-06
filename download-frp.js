@@ -9,40 +9,38 @@ const getJSON = bent("json", {
   "User-Agent": "seveibar, frpc-bin (an npm module)",
 })
 
+const releases = {
+  'linux': {
+    arm64: 'linux_arm64.tar.gz',
+    arm: 'linux_arm.tar.gz',
+    x64: 'linux_amd64.tar.gz',
+    mips: 'linux_mips.tar.gz',
+    mips64: 'linux_mips64.tar.gz',
+    mips64le: 'linux_mips64le.tar.gz'
+  },
+  'darwin': {
+    arm64: 'darwin_arm64.tar.gz',
+    x64: 'darwin_amd64.tar.gz'
+  },
+  'win32': {
+    x64: 'windows_amd64.zip',
+    ia32: 'windows_386.zip',
+    arm64: 'windows_arm64.zip'
+  },
+  'freebsd': {
+    x64: 'windows_amd64.zip',
+  }
+}
+
 const platform = os.platform()
 const arch = os.arch()
 let osRelease = null
-
-switch (platform) {
-  case "win32":
-    osRelease = `windows_${arch}`
-    break
-  case "darwin":
-    osRelease = "darwin_amd64"
-    break
-  case "freebsd":
-    osRelease = "freebsd"
-    break
-  case "linux":
-    osRelease = `linux_${arch.replace("x64", "amd64")}`
-    break
-  // case 'aix': console.log("IBM AIX platform");
-  //   break;
-  // case 'android': console.log("Android platform");
-  //   break;
-  // case 'openbsd': console.log("OpenBSD platform");
-  //   break;
-  // case 'sunos': console.log("SunOS platform");
-  //   break;
-
-  default:
-    osRelease = `${platform}_${arch}`
-}
+osRelease = releases[platform][arch]
 
 // Originally derived from the package.json, but that approach doesn't allow for
 // any patches to the bindings... Maybe only sync major versions in the future?
 // Either that or tag the releases for older version e.g. 1.2.3-frpc6
-const releaseVersionToUse = "0.37.0"
+const releaseVersionToUse = "0.57.0"
 
 module.exports = async () => {
   // Get all the assets from the github release page
@@ -124,5 +122,5 @@ module.exports = async () => {
 }
 
 if (!module.parent) {
-  module.exports().then(() => {})
+  module.exports().then(() => { })
 }
