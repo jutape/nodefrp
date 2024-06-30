@@ -4,6 +4,7 @@ const downloadFile = require("./download-file")
 const path = require("path")
 const fs = require("fs")
 const tar = require("tar")
+const extractZip = require('extract-zip')
 
 const getJSON = bent("json", {
   "User-Agent": "seveibar, frpc-bin (an npm module)",
@@ -40,7 +41,7 @@ osRelease = releases[platform][arch]
 // Originally derived from the package.json, but that approach doesn't allow for
 // any patches to the bindings... Maybe only sync major versions in the future?
 // Either that or tag the releases for older version e.g. 1.2.3-frpc6
-const releaseVersionToUse = "0.57.0"
+const releaseVersionToUse = "0.58.1"
 
 module.exports = async () => {
   // Get all the assets from the github release page
@@ -74,10 +75,13 @@ module.exports = async () => {
   const downloadPath = path.resolve(__dirname, myAsset.name)
   const extractDirPath = path.resolve(
     __dirname,
-    myAsset.name.replace(".tar.gz", "")
+    myAsset.name.includes('.tar.gz') ? myAsset.name.replace('.tar.gz', '') : myAsset.name.replace('.zip', '')
   )
-  const frpcPath = path.resolve(extractDirPath, "frpc")
-  const frpsPath = path.resolve(extractDirPath, "frps")
+
+  const frpPlatform = os.platform()
+  const frpcPath = path.resolve(extractDirPath, frpPlatform === 'win32' ? "frpc.exe" : "frpc")
+  const frpsPath = path.resolve(extractDirPath, frpPlatform === 'win32' ? "frps.exe" : 
+    "frps"  )
 
   if (fs.existsSync(frpcPath) && fs.existsSync(frpsPath)) {
     return { frpsPath, frpcPath }
@@ -95,16 +99,20 @@ module.exports = async () => {
 
   // Extract the files from the downloaded asset (i.e. pull out the frpc binary)
   // After this, you should have a "frpc" executable file
-
   if (!fs.existsSync(extractDirPath)) {
     console.log(`extracting ${myAsset.name}...`)
-    let tarXPath = downloadPath
-    await tar.x({
-      file: tarXPath,
-      z: true,
-    })
-    fs.unlinkSync(tarXPath)
+    if (downloadPath.includes('.tar.gz')) {
+      let tarXPath = downloadPath
+      await tar.x({
+        file: tarXPath,
+        z: true,
+      })
+      fs.unlinkSync(tarXPath)
+    } else {
+      await extractZip(downloadPath, { dir: __dirname })
+    }
 
+    console.log(frpcPath)
     if (!fs.existsSync(frpcPath)) {
       throw new Error(
         `For some reason, after extracting frp there was no frpc executable!`
@@ -117,7 +125,7 @@ module.exports = async () => {
       )
     }
   }
-
+  console.log({ frpcPath, frpsPath })
   return { frpcPath, frpsPath }
 }
 
