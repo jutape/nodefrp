@@ -72,9 +72,9 @@ module.exports = async () => {
   // Download the asset (which is a compressed version of the executable)
   // e.g. download something like frpc-ubuntu.tar.xz
 
-  const downloadPath = path.resolve(__dirname, myAsset.name)
+  const downloadPath = path.resolve(path.dirname(__filename), myAsset.name)
   const extractDirPath = path.resolve(
-    __dirname,
+    path.dirname(__filename),
     myAsset.name.includes('.tar.gz') ? myAsset.name.replace('.tar.gz', '') : myAsset.name.replace('.zip', '')
   )
 

@@ -36,6 +36,7 @@ const getTemporaryConfigFile = async (config) => {
 
 module.exports.startClient = async (config) => {
   const { frpcPath } = await downloadfrp()
+  frpcPath = frpcPath.replace('app.asar','app.asar.unpacked')
   const { configPath } = await getTemporaryConfigFile(config)
 
   const proc = child_process.spawn(frpcPath, ["-c", configPath], {
@@ -84,6 +85,7 @@ module.exports.startClient = async (config) => {
 
 module.exports.startServer = async (config) => {
   const { frpsPath } = await downloadfrp()
+  frpsPath = frpsPath.replace('app.asar','app.asar.unpacked')
   const { configPath, bindPort } = await getTemporaryConfigFile(config)
 
   const proc = child_process.spawn(frpsPath, ["-c", configPath], {
